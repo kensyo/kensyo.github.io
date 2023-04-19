@@ -1,0 +1,20 @@
+name: Redirects
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install jq -y
+      - name: Redirect
+        run: |
+          JSON=`curl -s -L -H 'Cache-Control: no-cache' -o /dev/null -w "%{json}" https://kensyo.github.io/fd-relation-schema`
+          URL=`echo $JSON | jq -r '.url'`
+          echo "Redirecting to ${URL}"
+          echo -e "HTTP/1.1 301 Moved Permanently\r\nLocation: ${URL}\r\n\r\n" | nc -l -p 8080
